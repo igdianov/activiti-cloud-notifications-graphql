@@ -10,11 +10,11 @@ pipeline {
         }
     }
     environment {
-      ORG               = 'activiti'
-      APP_NAME          = 'activiti-cloud-notifications-graphql'
-      CHARTMUSEUM_CREDS = credentials('jenkins-x-chartmuseum')
-      GITHUB_CHARTS_REPO    = "https://github.com/Activiti/activiti-cloud-helm-charts.git"
-      GITHUB_HELM_REPO_URL = "https://activiti.github.io/activiti-cloud-helm-charts/"
+      ORG                  = "activiti"
+      APP_NAME             = "activiti-cloud-notifications-graphql"
+      CHARTMUSEUM_CREDS    = credentials('jenkins-x-chartmuseum')
+      GITHUB_CHARTS_REPO   = "https://github.com/${ORG}/activiti-cloud-helm-charts.git"
+      GITHUB_HELM_REPO_URL = "https://${ORG}.github.io/activiti-cloud-helm-charts/"
       RELEASE_BRANCH       = "master"
     }
     stages {
@@ -33,24 +33,23 @@ pipeline {
             sh "mvn install"
             sh 'export VERSION=$PREVIEW_VERSION && skaffold build -f skaffold.yaml'
 
-            // skip building docker image for now
-            // sh "jx step post build --image $DOCKER_REGISTRY/$ORG/$APP_NAME:$PREVIEW_VERSION"
+            sh "jx step post build --image $DOCKER_REGISTRY/$ORG/$APP_NAME:$PREVIEW_VERSION"
 
-
-             dir("./charts/$APP_NAME") {
-               sh "make build"
-             }
+            // Let's build chart to check for any errors
+            dir("./charts/$APP_NAME") {
+              sh "make build"
+            }
           }
         }
       }
       stage('Build Release') {
         when {
-          branch '$RELEASE_BRANCH'
+          branch '${RELEASE_BRANCH}'
         }
         steps {
           container('maven') {
             // ensure we're not on a detached head
-            sh "git checkout master"
+            sh "git checkout ${RELEASE_BRANCH}"
             sh "git config --global credential.helper store"
 
             sh "jx step git credentials"
@@ -71,7 +70,7 @@ pipeline {
       }
       stage('Promote to Environments') {
         when {
-          branch '$RELEASE_BRANCH'
+          branch '${RELEASE_BRANCH}'
         }
         steps {
           container('maven') {
