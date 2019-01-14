@@ -10,7 +10,7 @@ pipeline {
         }
     }
     environment {
-      ORG                  = "igdianov"
+      ORG                  = "introproventures"
       APP_NAME             = "activiti-cloud-notifications-graphql"
       CHARTMUSEUM_CREDS    = credentials('jenkins-x-chartmuseum')
       GITHUB_CHARTS_REPO   = "https://github.com/${ORG}/activiti-cloud-helm-charts.git"
