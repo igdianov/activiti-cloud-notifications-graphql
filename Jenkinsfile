@@ -44,7 +44,7 @@ pipeline {
       }
       stage('Build Release') {
         when {
-          branch '${RELEASE_BRANCH}'
+          branch "${RELEASE_BRANCH}"
         }
         steps {
           container('maven') {
@@ -70,7 +70,7 @@ pipeline {
       }
       stage('Promote to Environments') {
         when {
-          branch '${RELEASE_BRANCH}'
+          branch "${RELEASE_BRANCH}"
         }
         steps {
           container('maven') {
