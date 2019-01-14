@@ -84,7 +84,7 @@ pipeline {
               sh "jx promote -b --all-auto --timeout 1h --version \$(cat ../../VERSION) --no-wait"
 
               // publish to github
-              sh "make github"
+              //sh "make github"
 
               // Update versions
               //sh "make updatebot/push-version"
