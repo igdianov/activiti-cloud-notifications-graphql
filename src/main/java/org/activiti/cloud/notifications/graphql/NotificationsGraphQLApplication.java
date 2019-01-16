@@ -33,7 +33,7 @@ public class NotificationsGraphQLApplication {
     }
     
     @Configuration
-    public class FilterProvider {
+    public class CorsFilterProvider {
 
         @Bean
         public WebMvcConfigurer corsConfiguration() {
