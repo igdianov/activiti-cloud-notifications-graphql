@@ -12,15 +12,15 @@ pipeline {
     environment {
       ORG                  = "introproventures"
       APP_NAME             = "activiti-cloud-notifications-graphql"
-      CHARTMUSEUM_CREDS    = credentials('jenkins-x-chartmuseum')
+      CHARTMUSEUM_CREDS    = credentials("jenkins-x-chartmuseum")
       GITHUB_CHARTS_REPO   = "https://github.com/${ORG}/activiti-cloud-helm-charts.git"
       GITHUB_HELM_REPO_URL = "https://${ORG}.github.io/activiti-cloud-helm-charts/"
       RELEASE_BRANCH       = "igdianov"
     }
     stages {
-      stage('CI Build and push snapshot') {
+      stage("CI Build and push snapshot") {
         when {
-          branch 'PR-*'
+          branch "PR-*"
         }
         environment {
           PREVIEW_VERSION = "0.0.0-SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER"
@@ -28,10 +28,10 @@ pipeline {
           HELM_RELEASE = "$PREVIEW_NAMESPACE".toLowerCase()
         }
         steps {
-          container('maven') {
+          container("maven") {
             sh "mvn versions:set -DnewVersion=$PREVIEW_VERSION"
             sh "mvn install"
-            sh 'export VERSION=$PREVIEW_VERSION && skaffold build -f skaffold.yaml'
+            sh "export VERSION=$PREVIEW_VERSION && skaffold build -f skaffold.yaml"
 
             sh "jx step post build --image $DOCKER_REGISTRY/$ORG/$APP_NAME:$PREVIEW_VERSION"
 
@@ -42,12 +42,12 @@ pipeline {
           }
         }
       }
-      stage('Build Release') {
+      stage("Build Release") {
         when {
           branch "${RELEASE_BRANCH}"
         }
         steps {
-          container('maven') {
+          container("maven") {
             // ensure we're not on a detached head
             sh "git checkout ${RELEASE_BRANCH}"
             sh "git config --global credential.helper store"
@@ -57,23 +57,25 @@ pipeline {
             sh "echo \$(jx-release-version) > VERSION"
             sh "mvn versions:set -DnewVersion=\$(cat VERSION)"
 
+            sh "mvn clean install"
+
             dir ("./charts/$APP_NAME") {
               sh "make tag"
             }
-            sh 'mvn clean deploy'
+            sh "mvn deploy -DskipTests"
 
-            sh 'export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml'
+            sh "export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml"
 
             sh "jx step post build --image $DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat VERSION)"
           }
         }
       }
-      stage('Promote to Environments') {
+      stage("Promote to Environments") {
         when {
           branch "${RELEASE_BRANCH}"
         }
         steps {
-          container('maven') {
+          container("maven") {
             dir ("./charts/$APP_NAME") {
               sh "jx step changelog --version v\$(cat ../../VERSION)"
 
