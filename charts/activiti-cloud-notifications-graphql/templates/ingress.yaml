@@ -2,39 +2,83 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: {{ template "fullname" . }}
+  name: {{ template "fullname" . }}-backend
   labels:
     app: {{ template "fullname" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
   annotations:
+    {{- range $key, $value := .Values.global.gateway.ingress.annotations }}
+    {{ $key }}: {{ tpl $value $ | quote }}
+    {{- end }}
     {{- range $key, $value := .Values.ingress.annotations }}
-    {{ $key }}: {{ $value | quote }}
+    {{ $key }}: {{ tpl $value $ | quote }}
     {{- end }}
 spec:
   rules:
-    {{- if .Values.ingress.hostName }}
-    - host: {{ .Values.ingress.hostName }}
+    {{- if default .Values.global.gateway.host .Values.ingress.hostName }}
+    - host: {{ template "ingresshost" . }}
       http:
     {{- else }}
     - http:
     {{- end }} 
         paths:
-          - path: {{ .Values.ingress.path }}
+          - path: {{ .Values.ingress.web.path }}
             backend:
-{{- if .Values.service.name }}
-              serviceName: {{ .Values.service.name }}
-{{- else }}
-              serviceName: {{ template "fullname" . }}
-{{- end }}
+              serviceName: {{ template "servicename" . }}
               servicePort: {{ .Values.service.externalPort }}
-{{- if .Values.ingress.tls }}
+          - path: {{ .Values.ingress.ws.path }}
+            backend:
+              serviceName: {{ template "servicename" . }}
+              servicePort: {{ .Values.service.externalPort }}
+{{- if default .Values.global.gateway.ingress.tls .Values.ingress.tls }}
   tls:
-    - secretName: {{  .Values.ingress.tlsSecret }}
-      {{- if .Values.ingress.hostName }}
+    - secretName: {{ template "tlssecretname" . }}
+      {{- if default .Values.global.gateway.host .Values.ingress.hostName }}
       hosts:
-        - {{ .Values.ingress.hostName }}
+        - {{ template "ingresshost" . }}
+      {{- end }}
+{{- end }}
+---
+{{- if .Values.ingress.graphiql.enabled }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ template "fullname" . }}-graphiql
+  labels:
+    app: {{ template "fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    {{- range $key, $value := .Values.global.gateway.ingress.annotations }}
+    {{ $key }}: {{ tpl $value $ | quote }}
+    {{- end }}
+    {{- range $key, $value := .Values.ingress.graphiql.annotations }}
+    {{ $key }}: {{ tpl $value $ | quote }}
+    {{- end }}
+spec:
+  rules:
+    {{- if default .Values.global.gateway.host .Values.ingress.hostName }}
+    - host: {{ template "ingresshost" . }}
+      http:
+    {{- else }}
+    - http:
+    {{- end }} 
+        paths:
+          - path: {{ .Values.ingress.graphiql.path }}
+            backend:
+              serviceName: {{ template "servicename" . }}
+              servicePort: {{ .Values.service.externalPort }}
+{{- if default .Values.global.gateway.ingress.tls .Values.ingress.tls }}
+  tls:
+    - secretName: {{ template "tlssecretname" . }}
+      {{- if default .Values.global.gateway.host .Values.ingress.hostName }}
+      hosts:
+        - {{ template "ingresshost" . }}
       {{- end }}
 {{- end }}
 {{- end }}
+{{- end }}
+
