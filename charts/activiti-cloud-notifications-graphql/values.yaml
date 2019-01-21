@@ -104,6 +104,6 @@ ingress:
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"   
     nginx.ingress.kubernetes.io/x-forwarded-prefix: "true"
     nginx.ingress.kubernetes.io/affinity: cookie
-    nginx.ingress.kubernetes.io/session-cookie-name: "ACTIVITI_NOTIFICATIONS_COOKIE"
+    nginx.ingress.kubernetes.io/session-cookie-name: "activiti-cloud-notifications-graphql-route"
     nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
     
