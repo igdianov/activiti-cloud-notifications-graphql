@@ -86,7 +86,7 @@ pipeline {
               sh "make github"
 
               // promote through all 'Auto' promotion Environments
-              sh "jx promote -b --all-auto --timeout 1h --version \$(cat ../../VERSION) --no-wait --helm-repo-url=${GITHUB_HELM_REPO_URL}"
+              sh "jx promote -b --all-auto --timeout 1h --version \$(cat ../../VERSION) --no-wait --helm-repo-url=${GITHUB_HELM_REPO_URL} --alias=activiti-cloud-notifications"
 
               // Update versions
               //sh "make updatebot/push-version"
