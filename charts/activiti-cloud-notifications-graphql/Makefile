@@ -1,11 +1,12 @@
-#CHART_REPO := http://jenkins-x-chartmuseum:8080
+CHART_REPO := $(or $(CHART_REPOSITORY),http://jenkins-x-chartmuseum:8080)
 CURRENT=$(shell pwd)
-NAME := activiti-cloud-notifications-graphql
-ORG := $(or $(ORG),activiti)
-APP_NAME := $(or $(APP_NAME),$(NAME))
+NAME := $(shell basename $(CURRENT))
+ORG := $(or $(ORG),$(shell git remote -v | grep "(fetch)" | sed 's/.*\/\([^ ]*\)\/.*/\1/'))
 OS := $(shell uname)
-RELEASE_VERSION := $(shell cat ../../VERSION)
-RELEASE_ARTIFACT := $(or $(RELEASE_ARTIFACT),$(APP_NAME))
+APP_NAME := $(or $(APP_NAME),$(NAME))
+RELEASE_VERSION := $(or $(shell cat ../../VERSION),$(shell sed -n 's/^version: //p' Chart.yaml))
+RELEASE_ARTIFACT := $(or $(RELEASE_ARTIFACT),$(NAME))
+RELASE_NAME := $(or $(RELEASE_NAME),$(NAME))
 
 GITHUB_CHARTS_REPO := $(or $(GITHUB_CHARTS_REPO),$(shell git config --get remote.origin.url))
 GITHUB_CHARTS_BRANCH := $(or $(GITHUB_CHARTS_BRANCH),gh-pages)
@@ -16,25 +17,24 @@ build: clean
 	helm repo add activiti-cloud-helm-charts https://activiti.github.io/activiti-cloud-helm-charts/
 	helm dependency build
 	helm lint
-	helm install . --name ${NAME} --debug --dry-run
+	helm install . --name ${RELASE_NAME} --debug --dry-run
 
 install:  build
-	helm install . --name ${NAME}
+	helm install . --name ${RELASE_NAME}
 
 upgrade: clean build
-	helm upgrade ${NAME} .
+	helm upgrade ${RELASE_NAME} .
 
 delete:
-	helm delete --purge ${NAME}
+	helm delete --purge ${RELASE_NAME}
 
 clean:
 	rm -rf requirements.lock
 	rm -rf charts
 	rm -rf ${NAME}*.tgz
 
-release: build
-	helm package .
-	curl  -u $(CHARTMUSEUM_CREDS_USR):$(CHARTMUSEUM_CREDS_PSW) --data-binary "@$(NAME)-$(shell sed -n 's/^version: //p' Chart.yaml).tgz" $(CHART_REPO)/api/charts
+release: $(NAME)-$(RELEASE_VERSION).tgz
+	curl  -u $(CHARTMUSEUM_CREDS_USR):$(CHARTMUSEUM_CREDS_PSW) --data-binary "@$(NAME)-$(RELEASE_VERSION).tgz" $(CHART_REPO)/api/charts
 	rm -rf ${NAME}*.tgz%
 
 $(NAME)-$(RELEASE_VERSION).tgz: build
