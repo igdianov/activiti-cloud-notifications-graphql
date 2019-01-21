@@ -21,16 +21,16 @@
     <tag>HEAD</tag>
   </scm>
   <properties>
-    <java.version>1.8</java.version>
+    <java.version>11</java.version>
     <activiti-cloud-dependencies.version>7.0.0-SNAPSHOT</activiti-cloud-dependencies.version>
     <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
     <maven-failsafe-plugin.version>3.0.0-M3</maven-failsafe-plugin.version>
     <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
     <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version> <!-- required for jx -->
-    <byte-buddy.version>1.8.11</byte-buddy.version> <!-- required for stagemonitor -->
   </properties>
   <dependencyManagement>
     <dependencies>
+<!--
       <dependency>
         <groupId>org.activiti.cloud.common</groupId>
         <artifactId>activiti-cloud-services-stagemonitor</artifactId>
@@ -38,7 +38,8 @@
         <scope>import</scope>
         <type>pom</type>
       </dependency>
-      <dependency>
+ -->
+       <dependency>
         <groupId>org.activiti.cloud.dependencies</groupId>
         <artifactId>activiti-cloud-dependencies</artifactId>
         <version>${activiti-cloud-dependencies.version}</version>
@@ -48,10 +49,12 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
+<!--
     <dependency>
       <groupId>org.activiti.cloud.common</groupId>
       <artifactId>activiti-cloud-services-stagemonitor</artifactId>
     </dependency>
+ -->
     <dependency>
       <groupId>org.activiti.cloud.notifications.graphql</groupId>
       <artifactId>activiti-cloud-starter-notifications-graphql</artifactId>
@@ -99,6 +102,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven-compiler-plugin.version}</version>
         <configuration>
+          <release>${java.version}</release>
           <source>${java.version}</source>
           <target>${java.version}</target>
           <showDeprecation>true</showDeprecation>
