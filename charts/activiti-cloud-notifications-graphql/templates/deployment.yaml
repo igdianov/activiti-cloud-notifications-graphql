@@ -25,11 +25,7 @@ spec:
         - name: JAVA_OPTS
           value: "-Xmx{{ .Values.javaOpts.xmx }} -Xms{{ .Values.javaOpts.xms }} {{ .Values.javaOpts.other}}"
         - name: SPRING_APPLICATION_NAME
-{{- if .Values.service.name }}
-          value: "{{ .Values.service.name }}"
-{{- else }}
-          value: {{ template "fullname" . }}
-{{- end }}
+          value: {{ template "servicename" . }}
         - name: SPRING_RABBITMQ_HOST
         {{- if .Values.global.rabbitmq.host.value }}
           value: "{{ .Values.global.rabbitmq.host.value }}"

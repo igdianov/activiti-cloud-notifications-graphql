@@ -12,13 +12,21 @@ global:
     password:
       value: guest
   keycloak:
-    url: ""
+    url: "http://activiti-keycloak.192.168.99.100.nip.io"
     name: keycloak
     service:
       type: http
       port: 80
   gateway:
-    host: &gatewayhost ""      
+    host: "activiti-cloud-gateway.192.168.99.100.nip.io"
+    ingress:
+      tls: # true | false
+      tlsSecret: # custom secret name or auto-generated 'tls-.Release.Name-activiti-cloud-gateway' if tls true
+      # global annotations to be added to all service ingresses i.e.        
+      # certmanager.k8s.io/issuer: letsencrypt-prod
+      # kubernetes.io/tls-acme: "true"    
+      annotations: 
+        kubernetes.io/ingress.class: "nginx"
 
 db:
   uri: ""
@@ -29,9 +37,9 @@ db:
   ddlAuto: none
 
 javaOpts:
-  xmx: 768m
-  xms: 512m
-  other: -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -Dsun.zip.disableMemoryMapping=true -XX:+UseParallelGC -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90
+  xmx: 1536m
+  xms: 768m
+  other: -XX:+UnlockExperimentalVMOptions -Dsun.zip.disableMemoryMapping=true -XX:+UseParallelGC -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10 -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90
 
 ## Allows the specification of additional environment variables
 extraEnv: |
@@ -45,25 +53,21 @@ image:
   repository: activiti-cloud-notifications-graphql
   tag: latest 
   pullPolicy: IfNotPresent
+  
 service:
-  name: notifications-graphql
+  name: activiti-cloud-notifications
   type: ClusterIP
   externalPort: 80
   internalPort: 8080
   annotations:
     fabric8.io/expose: "false"
-    fabric8.io/ingress.name: "activiti-cloud-notifications"
-    fabric8.io/ingress.annotations: |-
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/affinity: cookie
-      nginx.ingress.kubernetes.io/session-cookie-name: INGRESSCOOKIE
-      nginx.ingress.kubernetes.io/session-cookie-hash: sha1    
+    
 resources:
   limits:
-    memory: 1280Mi
+    memory: 2048Mi
   requests:
-    cpu: 500m
-    memory: 768Mi
+    cpu: 1
+    memory: 1024Mi
 probePath: /actuator/health
 livenessProbe:
   initialDelaySeconds: 140
@@ -75,15 +79,31 @@ readinessProbe:
   successThreshold: 1
   timeoutSeconds: 3
 terminationGracePeriodSeconds: 20
+
 ingress:
   ## Set to true to enable ingress record generation
   enabled: true
-  hostName: *gatewayhost
-  path: /activiti-cloud-notifications/?(.*)
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
+  tls: # overrides .Values.global.gateway.tls  
+  tlsSecret: # overrides .Values.global.gateway.tlsSecret  
+  hostName: # overrides .Values.global.gateway.host
+  graphiql: 
+    enabled: true
+    path: /graphiql
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+      ingress.kubernetes.io/add-base-url: "true"    
+  web:
+    path: /graphql
+  ws: 
+    path: /ws/graphql
+  annotations: 
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "*"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*" 
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET,PUT,POST,DELETE,PATCH,OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"   
+    nginx.ingress.kubernetes.io/x-forwarded-prefix: "true"
     nginx.ingress.kubernetes.io/affinity: cookie
-    nginx.ingress.kubernetes.io/session-cookie-name: "INGRESSCOOKIE"
+    nginx.ingress.kubernetes.io/session-cookie-name: "ACTIVITI_NOTIFICATIONS_COOKIE"
     nginx.ingress.kubernetes.io/session-cookie-hash: "sha1"
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-  
+    
