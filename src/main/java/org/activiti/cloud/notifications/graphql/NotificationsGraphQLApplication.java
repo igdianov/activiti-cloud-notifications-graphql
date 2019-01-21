@@ -23,7 +23,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class NotificationsGraphQLApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(NotificationsGraphQLApplication.class,
-                args);
+        SpringApplication.run(NotificationsGraphQLApplication.class, args);
     }
 }
