@@ -11,7 +11,7 @@
   </parent>
   <groupId>org.activiti.cloud.examples</groupId>
   <artifactId>activiti-cloud-notifications-graphql</artifactId>
-  <version>1.0.15</version>
+  <version>1.0.0-SNAPSHOT</version>
   <name>Activiti Cloud :: Notifications GraphQL</name>
   <url>http://activiti.org</url>
   <scm>
