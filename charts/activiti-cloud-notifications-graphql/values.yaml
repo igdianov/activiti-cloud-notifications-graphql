@@ -91,7 +91,7 @@ ingress:
     path: /graphiql
     annotations:
       nginx.ingress.kubernetes.io/rewrite-target: /
-      ingress.kubernetes.io/add-base-url: "true"    
+      nginx.ingress.kubernetes.io/add-base-url: "true"    
   web:
     path: /graphql
   ws: 
