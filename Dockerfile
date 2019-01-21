@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-slim	
+FROM openjdk:11-jdk-slim	
 ENV PORT 8080	
 EXPOSE 8080	
 COPY target/*.jar /opt/app.jar	
